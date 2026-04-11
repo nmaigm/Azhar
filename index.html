@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>عرض مجموع درجات الطالبات</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <style>
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --primary:#1f4e79;
+      --primary-2:#2d6ea3;
+      --text:#1b1f23;
+      --muted:#6b7280;
+      --border:#d9e2ec;
+      --success:#0f766e;
+      --danger:#b42318;
+      --shadow:0 10px 28px rgba(0,0,0,.08);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Tahoma, Arial, sans-serif;
+      background:linear-gradient(180deg,#eef4fb 0%, #f8fafc 100%);
+      color:var(--text);
+    }
+    .container{
+      max-width:900px;
+      margin:40px auto;
+      padding:20px;
+    }
+    .hero{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:28px;
+    }
+    h1{
+      margin:0 0 10px;
+      color:var(--primary);
+      font-size:30px;
+      text-align:center;
+    }
+    .subtitle{
+      text-align:center;
+      color:var(--muted);
+      margin-bottom:24px;
+      line-height:1.8;
+    }
+    .input-wrap{
+      display:grid;
+      grid-template-columns:1fr auto auto;
+      gap:12px;
+      margin-bottom:16px;
+    }
+    input{
+      width:100%;
+      padding:14px 16px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      font-size:18px;
+      outline:none;
+      background:#fff;
+    }
+    input:focus{
+      border-color:var(--primary-2);
+      box-shadow:0 0 0 4px rgba(45,110,163,.12);
+    }
+    button{
+      border:none;
+      border-radius:14px;
+      padding:14px 18px;
+      cursor:pointer;
+      font-size:16px;
+      font-weight:700;
+      transition:.2s ease;
+    }
+    .btn-primary{
+      background:var(--primary);
+      color:#fff;
+    }
+    .btn-primary:hover{background:var(--primary-2)}
+    .btn-secondary{
+      background:#e8f1f8;
+      color:var(--primary);
+    }
+    .btn-secondary:hover{background:#dae9f5}
+    .note{
+      font-size:14px;
+      color:var(--muted);
+      background:#f8fafc;
+      border:1px dashed var(--border);
+      padding:14px;
+      border-radius:14px;
+      line-height:1.8;
+    }
+    #status{
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:12px;
+      display:none;
+      line-height:1.7;
+      font-size:15px;
+    }
+    .status-info{
+      display:block !important;
+      background:#eef6ff;
+      color:#184b74;
+      border:1px solid #cfe5fb;
+    }
+    .status-error{
+      display:block !important;
+      background:#fff3f2;
+      color:var(--danger);
+      border:1px solid #ffd5d2;
+    }
+    #result{
+      display:none;
+      margin-top:22px;
+    }
+    .student-card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      padding:22px;
+      margin-bottom:16px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+      margin-top:10px;
+    }
+    .item{
+      background:#f9fbfd;
+      border:1px solid #e7eef5;
+      border-radius:14px;
+      padding:14px;
+    }
+    .label{
+      color:var(--muted);
+      font-size:14px;
+      margin-bottom:6px;
+    }
+    .value{
+      font-size:18px;
+      font-weight:700;
+      color:var(--text);
+      word-break:break-word;
+    }
+    .total-box{
+      margin-top:16px;
+      background:linear-gradient(135deg,#ecf7f3 0%, #f6fffb 100%);
+      border:1px solid #caefe4;
+      border-radius:16px;
+      padding:18px;
+    }
+    .total-box .value{
+      color:var(--success);
+      font-size:28px;
+    }
+    .footer-note{
+      margin-top:18px;
+      color:var(--muted);
+      font-size:13px;
+      text-align:center;
+      line-height:1.8;
+    }
+    @media (max-width: 700px){
+      .input-wrap{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr}
+      h1{font-size:24px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <h1>عرض مجموع درجات الطالبات</h1>
+      <div class="subtitle">
+        اكتب الرقم التسلسلي للطالبة لعرض بياناتها فقط.<br>
+        الصفحة تقرأ ملف الإكسل مباشرة عند الفتح أو عند الضغط على "تحديث البيانات".
+      </div>
+
+      <div class="input-wrap">
+        <input id="serialInput" type="text" placeholder="أدخل الرقم التسلسلي" onkeydown="if(event.key==='Enter'){searchStudent();}">
+        <button class="btn-primary" onclick="searchStudent()">بحث</button>
+        <button class="btn-secondary" onclick="loadExcelData(true)">تحديث البيانات</button>
+      </div>
+
+      <div class="note">
+        <strong>مهم:</strong> ضعي هذا الملف HTML في نفس المجلد الذي يحتوي على ملف الإكسل
+        <strong>SCE407-2025-2026-T2.xlsx</strong>.
+        بعد أي تعديل على الإكسل، فقط احفظي الملف ثم اعملي Refresh للصفحة أو اضغطي "تحديث البيانات".
+      </div>
+
+      <div id="status"></div>
+      <div id="result"></div>
+
+      <div class="footer-note">
+        في حال لم يعمل التحميل المباشر عند فتح الملف بالنقر المزدوج، شغّلي الصفحة من خادم محلي بسيط لأن بعض المتصفحات تمنع قراءة الملفات المحلية مباشرة لأسباب أمنية.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const EXCEL_FILE = "SCE407-2025-2026-T2.xlsx";
+    let students = [];
+
+    function showStatus(message, type = "info") {
+      const status = document.getElementById("status");
+      status.className = type === "error" ? "status-error" : "status-info";
+      status.textContent = message;
+    }
+
+    function clearStatus() {
+      const status = document.getElementById("status");
+      status.style.display = "none";
+      status.className = "";
+      status.textContent = "";
+    }
+
+    function normalizeValue(value) {
+      return value === undefined || value === null ? "" : String(value).trim();
+    }
+
+    function findColumn(columns, candidates) {
+      for (const candidate of candidates) {
+        const exact = columns.find(c => normalizeValue(c).toLowerCase() === candidate.toLowerCase());
+        if (exact) return exact;
+      }
+      for (const candidate of candidates) {
+        const partial = columns.find(c => normalizeValue(c).toLowerCase().includes(candidate.toLowerCase()));
+        if (partial) return partial;
+      }
+      return null;
+    }
+
+    async function loadExcelData(showMessage = false) {
+      clearStatus();
+      try {
+        if (showMessage) {
+          showStatus("جاري تحديث البيانات من ملف الإكسل...");
+        }
+
+        const response = await fetch(EXCEL_FILE + "?t=" + new Date().getTime());
+        if (!response.ok) {
+          throw new Error("تعذر الوصول إلى ملف الإكسل.");
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+        const sheetName = workbook.SheetNames.find(n => n === "ورقة1") || workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+        if (!rows.length) {
+          throw new Error("ملف الإكسل لا يحتوي على بيانات.");
+        }
+
+        const columns = Object.keys(rows[0]);
+
+        const colId = findColumn(columns, ["ID", "Serial", "الرقم التسلسلي"]);
+        const colEName = findColumn(columns, ["E Name", "Student Name (English)", "English Name"]);
+        const colAName = findColumn(columns, ["A Name", "Student Name (Arabic)", "Arabic Name"]);
+        const colGroup = findColumn(columns, ["Project Group", "Group"]);
+        const colProjectTotal = findColumn(columns, ["P. Total", "Project total"]);
+        const colTotal150 = findColumn(columns, ["Total Marks", "Total out of 150"]);
+        const colRounded = findColumn(columns, ["Total After Round", "Total out of 150 after rounding"]);
+
+        students = rows.map(row => ({
+          id: normalizeValue(row[colId]),
+          eName: normalizeValue(row[colEName]),
+          aName: normalizeValue(row[colAName]),
+          group: normalizeValue(row[colGroup]),
+          projectTotal: normalizeValue(row[colProjectTotal]),
+          total150: normalizeValue(row[colTotal150]),
+          roundedTotal: normalizeValue(row[colRounded]),
+        })).filter(s => s.id !== "");
+
+        if (!students.length) {
+          throw new Error("لم يتم العثور على بيانات صالحة للطالبات.");
+        }
+
+        if (showMessage) {
+          showStatus("تم تحديث البيانات بنجاح من ملف الإكسل.");
+        }
+      } catch (error) {
+        showStatus(
+          "تعذر تحميل ملف الإكسل مباشرة. السبب غالبًا أن الصفحة تعمل بدون خادم محلي أو أن اسم الملف/مكانه غير صحيح.\n" +
+          "تأكدي أن ملف HTML وملف Excel في نفس المجلد، ثم شغلي خادم محلي بسيط.",
+          "error"
+        );
+        console.error(error);
+      }
+    }
+
+    function searchStudent() {
+      const serial = document.getElementById("serialInput").value.trim();
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+      resultDiv.style.display = "none";
+
+      if (!serial) {
+        showStatus("من فضلك أدخلي الرقم التسلسلي.", "error");
+        return;
+      }
+
+      clearStatus();
+
+      const matches = students.filter(s => s.id === serial);
+
+      if (!matches.length) {
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML = `
+          <div class="student-card">
+            <div class="value" style="color:#b42318;">لا توجد طالبة بهذا الرقم التسلسلي.</div>
+          </div>
+        `;
+        return;
+      }
+
+      resultDiv.style.display = "block";
+
+      matches.forEach((s, index) => {
+        resultDiv.innerHTML += `
+          <div class="student-card">
+            <div class="grid">
+              <div class="item">
+                <div class="label">الرقم التسلسلي</div>
+                <div class="value">${s.id || "-"}</div>
+              </div>
+              <div class="item">
+                <div class="label">المجموعة</div>
+                <div class="value">${s.group || "-"}</div>
+              </div>
+              <div class="item">
+                <div class="label">الاسم بالعربي</div>
+                <div class="value">${s.aName || "-"}</div>
+              </div>
+              <div class="item">
+                <div class="label">الاسم بالإنجليزي</div>
+                <div class="value">${s.eName || "-"}</div>
+              </div>
+              <div class="item">
+                <div class="label">مجموع أعمال السنة</div>
+                <div class="value">${s.projectTotal || "-"}</div>
+              </div>
+              <div class="item">
+                <div class="label">المجموع من 150</div>
+                <div class="value">${s.total150 || "-"}</div>
+              </div>
+            </div>
+            <div class="total-box">
+              <div class="label">المجموع بعد التقريب</div>
+              <div class="value">${s.roundedTotal || "-"}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      if (matches.length > 1) {
+        showStatus("تم العثور على أكثر من طالبة بنفس الرقم التسلسلي في الملف.");
+      }
+    }
+
+    loadExcelData();
+  </script>
+</body>
+</html>
