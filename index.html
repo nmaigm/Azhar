@@ -182,28 +182,28 @@
     <div class="hero">
       <h1>عرض مجموع درجات الطالبات</h1>
       <div class="subtitle">
-        اكتب الرقم التسلسلي للطالبة لعرض بياناتها فقط.<br>
-        الصفحة تقرأ ملف الإكسل مباشرة عند الفتح أو عند الضغط على "تحديث البيانات".
+        اكتب الرقم التسلسلي للطالب/ة لعرض بياناته/ا فقط.<br>
+         
       </div>
 
       <div class="input-wrap">
         <input id="serialInput" type="text" placeholder="أدخل الرقم التسلسلي" onkeydown="if(event.key==='Enter'){searchStudent();}">
         <button class="btn-primary" onclick="searchStudent()">بحث</button>
-        <button class="btn-secondary" onclick="loadExcelData(true)">تحديث البيانات</button>
+        <!--button class="btn-secondary" onclick="loadExcelData(true)">تحديث البيانات</button-->
       </div>
 
-      <div class="note">
+      <!--div class="note">
         <strong>مهم:</strong> ضعي هذا الملف HTML في نفس المجلد الذي يحتوي على ملف الإكسل
         <strong>SCE407-2025-2026-T2.xlsx</strong>.
         بعد أي تعديل على الإكسل، فقط احفظي الملف ثم اعملي Refresh للصفحة أو اضغطي "تحديث البيانات".
-      </div>
+      </div-->
 
       <div id="status"></div>
       <div id="result"></div>
 
-      <div class="footer-note">
+      <!--div class="footer-note">
         في حال لم يعمل التحميل المباشر عند فتح الملف بالنقر المزدوج، شغّلي الصفحة من خادم محلي بسيط لأن بعض المتصفحات تمنع قراءة الملفات المحلية مباشرة لأسباب أمنية.
-      </div>
+      </div-->
     </div>
   </div>
 
@@ -244,12 +244,12 @@
       clearStatus();
       try {
         if (showMessage) {
-          showStatus("جاري تحديث البيانات من ملف الإكسل...");
+          showStatus("جاري تحديث البيانات  ...");
         }
 
         const response = await fetch(EXCEL_FILE + "?t=" + new Date().getTime());
         if (!response.ok) {
-          throw new Error("تعذر الوصول إلى ملف الإكسل.");
+          throw new Error("تعذر الوصول إلى البيانات.");
         }
 
         const arrayBuffer = await response.arrayBuffer();
@@ -260,7 +260,7 @@
         const rows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
         if (!rows.length) {
-          throw new Error("ملف الإكسل لا يحتوي على بيانات.");
+          throw new Error("لا يوجد بيانات.");
         }
 
         const columns = Object.keys(rows[0]);
@@ -269,18 +269,24 @@
         const colEName = findColumn(columns, ["E Name", "Student Name (English)", "English Name"]);
         const colAName = findColumn(columns, ["A Name", "Student Name (Arabic)", "Arabic Name"]);
         const colGroup = findColumn(columns, ["Project Group", "Group"]);
-        const colProjectTotal = findColumn(columns, ["P. Total", "Project total"]);
-        const colTotal150 = findColumn(columns, ["Total Marks", "Total out of 150"]);
-        const colRounded = findColumn(columns, ["Total After Round", "Total out of 150 after rounding"]);
+        
+        const colQuiz = findColumn(columns, ["Quiz1", "Quiz total"]);
+        const colMidterm = findColumn(columns, ["Midterm", "Midterm"]);
+        //const colProjectTotal = findColumn(columns, ["Project", "Project total"]);
+        const colTotal50 = findColumn(columns, ["Total Marks", "Total out of 50"]);
+        
 
         students = rows.map(row => ({
           id: normalizeValue(row[colId]),
           eName: normalizeValue(row[colEName]),
           aName: normalizeValue(row[colAName]),
           group: normalizeValue(row[colGroup]),
-          projectTotal: normalizeValue(row[colProjectTotal]),
-          total150: normalizeValue(row[colTotal150]),
-          roundedTotal: normalizeValue(row[colRounded]),
+          
+          Quiz1: normalizeValue(row[colQuiz]),
+          Midterm: normalizeValue(row[colMidterm]),
+          //projectTotal: normalizeValue(row[colProjectTotal]),
+          total50: normalizeValue(row[colTotal50]),
+          
         })).filter(s => s.id !== "");
 
         if (!students.length) {
@@ -288,12 +294,12 @@
         }
 
         if (showMessage) {
-          showStatus("تم تحديث البيانات بنجاح من ملف الإكسل.");
+          showStatus("تم تحديث البيانات بنجاح .");
         }
       } catch (error) {
         showStatus(
-          "تعذر تحميل ملف الإكسل مباشرة. السبب غالبًا أن الصفحة تعمل بدون خادم محلي أو أن اسم الملف/مكانه غير صحيح.\n" +
-          "تأكدي أن ملف HTML وملف Excel في نفس المجلد، ثم شغلي خادم محلي بسيط.",
+          "" +
+          "",
           "error"
         );
         console.error(error);
@@ -348,18 +354,23 @@
                 <div class="value">${s.eName || "-"}</div>
               </div>
               <div class="item">
-                <div class="label">مجموع أعمال السنة</div>
+                <div class="label">درجة الكويز</div>
+                <div class="value">${s.Quiz1 || "-"}</div>
+              </div>
+              <div class="item">
+                <div class="label">درجة الاختبار النصفي</div>
+                <div class="value">${s.Midterm || "-"}</div>
+              </div>
+              <!--div class="item">
+                <div class="label">درجة المشروع</div>
                 <div class="value">${s.projectTotal || "-"}</div>
               </div>
               <div class="item">
-                <div class="label">المجموع من 150</div>
-                <div class="value">${s.total150 || "-"}</div>
-              </div>
+                <div class="label">مجموع اعمال السنة من 50</div>
+                <div class="value">${s.total50 || "-"}</div>
+              </div-->
             </div>
-            <div class="total-box">
-              <div class="label">المجموع بعد التقريب</div>
-              <div class="value">${s.roundedTotal || "-"}</div>
-            </div>
+            
           </div>
         `;
       });
