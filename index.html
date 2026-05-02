@@ -272,7 +272,8 @@
         
         const colQuiz = findColumn(columns, ["Quiz1", "Quiz total"]);
         const colMidterm = findColumn(columns, ["Midterm", "Midterm"]);
-        //const colProjectTotal = findColumn(columns, ["Project", "Project total"]);
+        const colProjectTotal = findColumn(columns, ["Project", "Project total"]);
+        const colAssignments = findColumn(columns, ["Assignments", "Assignments total"]);
         const colTotal50 = findColumn(columns, ["Total Marks", "Total out of 50"]);
         
 
@@ -284,7 +285,8 @@
           
           Quiz1: normalizeValue(row[colQuiz]),
           Midterm: normalizeValue(row[colMidterm]),
-          //projectTotal: normalizeValue(row[colProjectTotal]),
+          projectTotal: normalizeValue(row[colProjectTotal]),
+          assignmentsTotal: normalizeValue(row[Assignments]),
           total50: normalizeValue(row[colTotal50]),
           
         })).filter(s => s.id !== "");
@@ -354,21 +356,25 @@
                 <div class="value">${s.eName || "-"}</div>
               </div>
               <div class="item">
-                <div class="label">درجة الكويز</div>
+                <div class="label">(5)درجة الكويز</div>
                 <div class="value">${s.Quiz1 || "-"}</div>
               </div>
               <div class="item">
-                <div class="label">درجة الاختبار النصفي</div>
+                <div class="label">(25)درجة الاختبار النصفي</div>
                 <div class="value">${s.Midterm || "-"}</div>
               </div>
-              <!--div class="item">
-                <div class="label">درجة المشروع</div>
+              <div class="item">
+                <div class="label"> (10) درجة المشروع</div>
                 <div class="value">${s.projectTotal || "-"}</div>
+              </div>
+              <div class="item">
+                <div class="label">Assesments (10)</div>
+                <div class="value">${s.assignmentsTotal || "-"}</div>
               </div>
               <div class="item">
                 <div class="label">مجموع اعمال السنة من 50</div>
                 <div class="value">${s.total50 || "-"}</div>
-              </div-->
+              </div>
             </div>
             
           </div>
