@@ -315,7 +315,7 @@
       resultDiv.style.display = "none";
 
       if (!serial) {
-        showStatus("من فضلك أدخلي الرقم التسلسلي.", "error");
+        showStatus("من فضلك أدخلي الرقم القومي.", "error");
         return;
       }
 
@@ -327,7 +327,7 @@
         resultDiv.style.display = "block";
         resultDiv.innerHTML = `
           <div class="student-card">
-            <div class="value" style="color:#b42318;">لا توجد طالبة بهذا الرقم التسلسلي.</div>
+            <div class="value" style="color:#b42318;">لا توجد طالبة بهذا الرقم القومي.</div>
           </div>
         `;
         return;
